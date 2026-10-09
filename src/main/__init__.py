@@ -63,7 +63,112 @@ def status_report(name, robot_type, hp, max_hp, battery):
 def analyze_damage_log(lines):
     """TODO(Q2)：解析混合格式伤害日志，返回固定契约的统计 dict；
     行格式、去重与统计口径见题面 Q2 规范。"""
-    raise NotImplementedError("Q2 analyze_damage_log：题面 Q2·多源日志解析与统计")
+    import json
+    
+    total_damage = 0
+    by_armor = {"front":0, "left":0, "right":0}
+    seen_id = set()
+    event_count = 0
+
+    #开始读取log
+    for line in lines:
+        if not isinstance(line, str):
+            continue
+        
+        line = line.strip()
+
+        if not line or line.startswith("#"):
+            continue
+
+        if line.startswith("{"):
+            try:
+                data = json.loads(line)
+            except (ValueError, TypeError):
+                continue
+
+            if not isinstance(data, dict):
+                continue
+
+            armor = data.get("armor")
+            damage = data.get("damage")
+
+            if not isinstance(armor, str) or armor not in by_armor:
+                continue
+
+            if type(damage) is not int or damage <= 0:
+                continue
+
+            if "id" in data:
+                event_id = data["id"]
+
+                try:
+                    if event_id in seen_id:
+                        continue
+                    seen_id.add(event_id)
+                except TypeError:
+                    continue
+
+            by_armor[armor] += damage
+            total_damage += damage
+            event_count += 1
+            continue
+
+        elements = line.split(",")
+
+        armor_map = {"F": "front", "L": "left", "R": "right"}
+        parsed = []
+        valid = True
+
+        for element in elements:
+            pair = element.split(":")
+
+            if len(pair) != 2:
+                valid = False
+                break
+
+            side, damage_text = pair
+
+            if side not in armor_map:
+                valid = False
+                break
+
+            if not damage_text.isascii() or not damage_text.isdigit():
+                valid = False
+                break
+
+            damage = int(damage_text)
+
+            if damage <= 0:
+                valid = False
+                break
+
+            parsed.append((armor_map[side], damage))
+
+        if not valid:
+            continue
+
+        for armor, damage in parsed:
+            by_armor[armor] += damage
+            total_damage += damage
+            event_count += 1
+
+    if event_count == 0:
+        most_hit = None
+        avg = 0.0
+    else:
+        most_hit = max(by_armor, key=by_armor.get)
+        avg = round(total_damage / event_count, 2)
+
+    return {
+        "total": total_damage,
+        "by_armor": by_armor,
+        "most_hit": most_hit,
+        "avg": avg
+    }
+
+
+
+
 
 
 # ---------------------------------------------------------------------------
