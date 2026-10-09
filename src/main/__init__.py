@@ -42,6 +42,7 @@ def hp_ratio(hp, max_hp):
         percentage = round((hp / max_hp) * 100)
         return max(0, min(100, int(percentage)))
 
+
 def status_report(name, robot_type, hp, max_hp, battery):
     """TODO(Q1)：一行自检报告字符串；档位判定与逐字符格式见题面 Q1 规范。"""
     hp_pct = hp_ratio(hp, max_hp)
@@ -55,26 +56,28 @@ def status_report(name, robot_type, hp, max_hp, battery):
     else:
         bty_status = "LOW"
 
-    return (f"{name:<10}|{robot_type:^10}|" f"HP {hp_pct:>3}%|BAT {battery_pct:>3}%|{bty_status}"    )
+    return (f"{name:<10}|{robot_type:^10}|" f"HP {hp_pct:>3}%|BAT {battery_pct:>3}%|{bty_status}")
 
 # ---------------------------------------------------------------------------
 # Q2 战斗日志分析（题面 Q2·多源日志解析与统计）
 # ---------------------------------------------------------------------------
+
+
 def analyze_damage_log(lines):
     """TODO(Q2)：解析混合格式伤害日志，返回固定契约的统计 dict；
     行格式、去重与统计口径见题面 Q2 规范。"""
     import json
-    
+
     total_damage = 0
-    by_armor = {"front":0, "left":0, "right":0}
+    by_armor = {"front": 0, "left": 0, "right": 0}
     seen_id = set()
     event_count = 0
 
-    #开始读取log
+    # 开始读取log
     for line in lines:
         if not isinstance(line, str):
             continue
-        
+
         line = line.strip()
 
         if not line or line.startswith("#"):
@@ -165,10 +168,6 @@ def analyze_damage_log(lines):
         "most_hit": most_hit,
         "avg": avg
     }
-
-
-
-
 
 
 # ---------------------------------------------------------------------------
